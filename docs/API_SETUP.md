@@ -59,7 +59,7 @@ SerpApi 키는 비밀이라 웹페이지에 넣으면 안 되므로, 키를 숨�
 
 1. **SerpApi 가입** → <https://serpapi.com/> → 대시보드에서 **API Key** 복사
 2. **Cloudflare 가입** → <https://dash.cloudflare.com/sign-up> (무료)
-3. `flight-proxy/wrangler.toml` 의 `ALLOWED_ORIGINS` 에서 `YOUR-GITHUB-ID` 를 내 깃허브 아이디로 바꾸기
+3. `flight-proxy/wrangler.toml` 의 `ALLOWED_ORIGINS` 에서 이미 `https://cuj-maker.github.io` 로 설정돼 있어요
 4. PC 터미널에서 (Node 설치되어 있으면 됨):
    ```bash
    cd flight-proxy

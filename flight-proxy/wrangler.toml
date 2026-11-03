@@ -6,6 +6,6 @@ compatibility_date = "2026-10-01"
 
 [vars]
 # Sites allowed to call this proxy (comma separated). Add your GitHub Pages address.
-ALLOWED_ORIGINS = "https://YOUR-GITHUB-ID.github.io,http://localhost:5173"
+ALLOWED_ORIGINS = "https://cuj-maker.github.io,http://localhost:5173"
 # Cache identical searches to save SerpApi quota (seconds)
 CACHE_SECONDS = "21600"
