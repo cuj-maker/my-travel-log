@@ -11,6 +11,7 @@ import { listTrips } from '@/services/tripService';
 import { getFile, hotelNights, hotelTotal, rankFlights, rankHotels, removeBooking, removeFlight, removeHotel, saveBooking, saveFlight, saveHotel, tripWarnings } from '@/services/bookingService';
 import { BookingStatus, Booking, Flight, Hotel, ID } from '@/types/models';
 import { fmtDate, fmtDateTime, fmtDuration, krw } from '@/lib/format';
+import { FlightSearchLinks, HotelSearchLinks } from '@/components/live/BookingLinks';
 
 type Tab = 'flight' | 'hotel' | 'booking';
 type Del = { kind: Tab; id: ID; label: string } | null;
@@ -60,7 +61,7 @@ export default function FlightHotelPage() {
   return (
     <>
       <PageHeader eyebrow="Flight & Hotel" title="항공권 · 숙소 · 예약"
-        desc="여행에 항공·숙소를 등록하면 일정과 지도에 자동 반영돼요. 가격은 ‘샘플 / 직접 입력 / 실시간’ 출처를 항상 함께 표시하며, 현재 실시간 조회 API는 연결되어 있지 않아요." />
+        desc="여행에 항공·숙소를 등록하면 일정과 지도에 자동 반영돼요. 스카이스캐너·구글 항공권·부킹닷컴·호텔스닷컴 검색을 여행 날짜로 바로 열 수 있어요. 가격은 ‘샘플 / 직접 입력’ 출처를 함께 표시해요." />
       <section className="page">
         <div className="scroll-row mb-6">
           {trips.map((t) => (
@@ -86,6 +87,7 @@ export default function FlightHotelPage() {
 
         {tab === 'flight' && (
           <div className="space-y-6">
+            <FlightSearchLinks key={trip.id} trip={trip} />
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => setFlightForm({ open: true, dir: 'outbound' })}><Plus size={14} /> 출국 항공권</Button>
               <Button variant="ghost" onClick={() => setFlightForm({ open: true, dir: 'return' })}><Plus size={14} /> 귀국 항공권</Button>
@@ -135,6 +137,7 @@ export default function FlightHotelPage() {
 
         {tab === 'hotel' && (
           <div className="space-y-6">
+            <HotelSearchLinks trip={trip} />
             <Button onClick={() => setHotelForm({ open: true })}><Plus size={14} /> 숙소 등록</Button>
             {hotels.length === 0 ? <EmptyState title="등록된 숙소가 없어요" desc="체크인·체크아웃이 일정에 자동으로 들어가고, 좌표를 입력하면 지도에서 숙소 위치로 쓰여요." /> : (
               <div className="grid gap-5 md:grid-cols-2">

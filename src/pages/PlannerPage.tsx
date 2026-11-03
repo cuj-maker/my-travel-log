@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { AlertTriangle, ArrowDown, ArrowUp, CloudRain, Compass, Info, Lock, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { MapPin, Navigation, AlertTriangle, ArrowDown, ArrowUp, CloudRain, Compass, Info, Lock, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { Button, Card, EmptyState, Modal, PageHeader, SampleBadge, Tag, toast } from '@/components/ui';
 import MapView, { DAY_COLORS } from '@/components/planner/MapView';
 import PlaceFormModal from '@/components/planner/PlaceFormModal';
@@ -11,6 +11,9 @@ import {
   removePlace, renameDay, routesOfDay, setRouteMode, tripDays, tripHotelPoint,
 } from '@/services/plannerService';
 import { fmtDate, krw } from '@/lib/format';
+import { mapsDirectionsUrl, mapsPlaceUrl } from '@/integrations/links';
+import { cityQuery } from '@/integrations/live';
+import { WeatherStrip } from '@/components/live/Weather';
 import { ItineraryDay, Place, TransportMode } from '@/types/models';
 
 type Panel = 'none' | 'nearby' | 'rain';
@@ -31,6 +34,7 @@ export default function PlannerPage() {
   const days = trip ? tripDays(trip.id) : [];
   const day: ItineraryDay | undefined = days.find((d) => d.id === dayId);
   const hotel = trip ? tripHotelPoint(trip.id) : undefined;
+  const cityName = trip ? cityQuery(trip) : undefined;
 
   const layers = useMemo(() => (day ? [day] : days).map((d) => ({ dayIndex: d.dayIndex, places: dayPlaces(d.id) })), [days, day]);
 
@@ -78,7 +82,8 @@ export default function PlannerPage() {
                       <p className="text-sm"><span className="mr-2 inline-block w-11 text-charcoal-mute">{p.time ?? '--:--'}</span><span className="font-medium">{p.name}</span> <Tag>{p.category}</Tag>
                         {p.needsReservation && <span className="ml-1"><Tag tone="clay">예약</Tag></span>}{p.linkedType && <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-olive"><Lock size={10} />예약 연동</span>}
                         {p.isSample && <span className="ml-1"><SampleBadge /></span>}</p>
-                      <p className="mt-0.5 pl-[3.25rem] text-xs text-charcoal-mute">{[p.stayMin ? `체류 ${fmtMin(p.stayMin)}` : '', p.estCostKRW ? krw(p.estCostKRW) : '', p.address, typeof p.lat !== 'number' && !p.linkedType ? '좌표 없음' : ''].filter(Boolean).join(' · ')}</p>
+                      <p className="mt-0.5 pl-[3.25rem] text-xs text-charcoal-mute">{[p.stayMin ? `체류 ${fmtMin(p.stayMin)}` : '', p.estCostKRW ? krw(p.estCostKRW) : '', p.address, typeof p.lat !== 'number' && !p.linkedType ? '좌표 없음' : ''].filter(Boolean).join(' · ')}
+                        {p.category !== '이동' && <a href={mapsPlaceUrl(p, cityName)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="ml-1.5 inline-flex items-center gap-0.5 whitespace-nowrap text-navy underline-offset-2 hover:underline"><MapPin size={11} />구글 지도</a>}</p>
                     </div>
                     {editable && (
                       <span className="flex shrink-0 gap-0.5">
@@ -98,6 +103,7 @@ export default function PlannerPage() {
                         <span>{r.distanceKm}km · {fmtMin(r.durationMin ?? 0)} · {r.estCostKRW ? krw(r.estCostKRW) : '무료'}{r.transfers ? ` · 환승 ${r.transfers}` : ''}</span>
                         <span className="rounded bg-beige/70 px-1.5 py-0.5 text-[10px] text-charcoal-soft" title="교통 API 미연결: 직선거리 기반 추정">예상</span>
                       </>) : <span>좌표가 없어 이동 정보를 계산할 수 없어요</span>}
+                      {ps[i + 1].category !== '이동' && p.category !== '이동' && <a href={mapsDirectionsUrl(p, ps[i + 1], r?.mode ?? 'subway', cityName)} target="_blank" rel="noreferrer" className="ml-auto inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-full border border-navy/30 px-2 py-0.5 text-[11px] text-navy hover:bg-navy-light"><Navigation size={10} />길찾기</a>}
                     </div>
                   )}
                 </Fragment>
@@ -163,6 +169,7 @@ export default function PlannerPage() {
             {placeCount === 0 && !day && <p className="text-xs text-charcoal-mute">DAY를 선택해 첫 장소를 추가해 보세요.</p>}
           </div>
           <div className="order-1 lg:order-2"><div className="lg:sticky lg:top-24">
+            <div className="mb-4"><WeatherStrip trip={trip} compact /></div>
             <MapView layers={layers} hotel={hotel} selectedId={selected} onSelect={setSelected} />
             <div className="mt-3 flex flex-wrap gap-3 text-xs text-charcoal-soft">{(day ? [day] : days).map((d) => <span key={d.id}><span style={{ color: DAY_COLORS[(d.dayIndex - 1) % DAY_COLORS.length] }}>●</span> DAY {d.dayIndex}</span>)}</div>
           </div></div>

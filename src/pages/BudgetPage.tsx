@@ -10,6 +10,7 @@ import * as db from '@/db/database';
 import { listTrips, updateTrip } from '@/services/tripService';
 import { CURRENCIES, getBudget, peopleOf, recordBookingAsExpense, removeExpense, saveBudget, SAMPLE_FX, settle, summarize, LedgerRow } from '@/services/budgetService';
 import { CurrencyCode, Expense } from '@/types/models';
+import { liveFx, refreshLiveFx } from '@/integrations/live';
 import { fmtDate, krw } from '@/lib/format';
 
 type Tab = 'overview' | 'expenses' | 'fx' | 'settle';
@@ -59,7 +60,7 @@ export default function BudgetPage() {
   return (
     <>
       <PageHeader eyebrow="Travel Budget" title="여행 경비"
-        desc="예산과 실제 지출을 한곳에서. 예약 금액은 결제 상태로 구분해 실제 지출과 중복 계산하지 않아요. 환율은 직접 입력하거나 샘플 환율(실시간 아님)을 써요."
+        desc="예산과 실제 지출을 한곳에서. 예약 금액은 결제 상태로 구분해 실제 지출과 중복 계산하지 않아요. 환율은 실시간 시장 환율을 기본으로 쓰고, 직접 입력한 환율이 있으면 그걸 우선해요."
         action={<div className="flex gap-2"><Button variant="ghost" onClick={() => setSettings(true)}><Settings2 size={14} /> 예산 설정</Button><Button onClick={() => { setForm({ open: true }); setTab('expenses'); }}><Plus size={14} /> 지출 입력</Button></div>} />
       <section className="page">
         <div className="scroll-row mb-5">
@@ -167,12 +168,19 @@ export default function BudgetPage() {
 
         {tab === 'fx' && (
           <div className="space-y-4">
-            <p className="text-sm text-charcoal-soft">1 단위당 원화(KRW)예요. 직접 입력하면 이 여행의 새 지출에 기본값으로 쓰여요. 이미 기록한 지출은 입력 당시 환율을 유지합니다. 실시간 환율 API는 연결되어 있지 않고, 아래 ‘샘플’은 임의의 기준값이에요.</p>
+            <p className="text-sm text-charcoal-soft">1 단위당 원화(KRW)예요. ‘오늘 환율’은 실시간 시장 환율(하루 1회 갱신)이고, ‘내 환율’을 입력하면 이 여행의 새 지출에 우선 적용돼요. 이미 기록한 지출은 입력 당시 환율을 유지합니다.</p>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-olive-light/60 px-4 py-2.5 text-xs text-olive-dark">
+              <span>{liveFx() ? <>● 실시간 연결됨 · {new Date(liveFx()!.asOf).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })} 기준 · <a className="underline" href="https://www.exchangerate-api.com" target="_blank" rel="noreferrer">Rates By Exchange Rate API</a></> : '실시간 환율을 불러오지 못해 샘플 값을 보여줘요 (오프라인?)'}</span>
+              <button className="underline" onClick={() => refreshLiveFx(true).then(() => toast(liveFx() ? '환율을 새로 불러왔어요' : '환율을 불러오지 못했어요', liveFx() ? 'ok' : 'error'))}>새로고침</button>
+            </div>
             <div className="overflow-hidden rounded-xl2 border border-beige bg-white/70">
-              <table className="w-full text-left text-sm"><thead className="bg-cream text-[11px] uppercase tracking-label text-charcoal-mute"><tr><th className="p-3">통화</th><th className="p-3">샘플 환율</th><th className="p-3">내 환율</th></tr></thead>
-                <tbody>{CURRENCIES.filter((c) => c.code !== 'KRW').map((c) => (
-                  <tr key={c.code} className="border-t border-beige/70"><td className="p-3">{c.label}</td><td className="p-3 text-charcoal-mute">{SAMPLE_FX[c.code]} <span className="text-[10px]">샘플</span></td>
-                    <td className="p-3"><input type="number" min={0} step="any" aria-label={`${c.code} 환율`} className="field !w-32 !py-1.5" placeholder="샘플 사용" value={fxDraft[c.code] ?? (saved[c.code] ? String(saved[c.code]) : '')} onChange={(e) => setFxDraft((p) => ({ ...p, [c.code]: e.target.value }))} /></td></tr>))}</tbody></table>
+              <table className="w-full text-left text-sm"><thead className="bg-cream text-[11px] uppercase tracking-label text-charcoal-mute"><tr><th className="p-3">통화</th><th className="p-3">오늘 환율</th><th className="p-3">내 환율</th></tr></thead>
+                <tbody>{CURRENCIES.filter((c) => c.code !== 'KRW').map((c) => {
+                  const live = liveFx()?.rates[c.code];
+                  return (
+                  <tr key={c.code} className="border-t border-beige/70"><td className="p-3">{c.label}</td><td className="p-3 text-charcoal-soft">{(live ?? SAMPLE_FX[c.code]).toLocaleString()} <span className={`text-[10px] ${live ? 'text-olive-dark' : 'text-clay'}`}>{live ? '실시간' : '샘플'}</span></td>
+                    <td className="p-3"><input type="number" min={0} step="any" aria-label={`${c.code} 환율`} className="field !w-28 !py-1.5 sm:!w-32" placeholder="오늘 환율" value={fxDraft[c.code] ?? (saved[c.code] ? String(saved[c.code]) : '')} onChange={(e) => setFxDraft((p) => ({ ...p, [c.code]: e.target.value }))} /></td></tr>);
+                })}</tbody></table>
             </div>
             <Button onClick={saveFx} disabled={!Object.keys(fxDraft).length}>환율 저장</Button>
           </div>

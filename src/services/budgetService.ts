@@ -10,6 +10,7 @@
 import * as db from '@/db/database';
 import { CurrencyCode, Expense, ExpenseCategory, EXPENSE_CATEGORIES, ID, PlaceCategory, StoredFile, Trip, TripBudget } from '@/types/models';
 import { plannedCosts } from './plannerService';
+import { liveFx } from '@/integrations/live';
 import { fileToCompressedDataUrl } from '@/lib/format';
 
 /* ---------------- FX ---------------- */
@@ -25,10 +26,13 @@ export const SAMPLE_FX: Record<CurrencyCode, number> = { KRW: 1, USD: 1380, JPY:
 
 export const getBudget = (tripId: ID) => db.byTrip('budgets', tripId)[0];
 
-export function fxRate(tripId: ID, c: CurrencyCode): { rate: number; source: 'user' | 'sample' } {
+/** Priority: rate saved for this trip > live market rate (cached) > SAMPLE fallback (offline, first launch). */
+export function fxRate(tripId: ID, c: CurrencyCode): { rate: number; source: 'user' | 'live' | 'sample' } {
   if (c === 'KRW') return { rate: 1, source: 'user' };
   const r = getBudget(tripId)?.fx?.[c];
-  return r ? { rate: r, source: 'user' } : { rate: SAMPLE_FX[c], source: 'sample' };
+  if (r) return { rate: r, source: 'user' };
+  const live = liveFx()?.rates[c];
+  return live ? { rate: live, source: 'live' } : { rate: SAMPLE_FX[c], source: 'sample' };
 }
 
 export function saveBudget(tripId: ID, patch: { totalKRW?: number; byCategory?: TripBudget['byCategory']; fx?: TripBudget['fx'] }) {

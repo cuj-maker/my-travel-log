@@ -75,7 +75,7 @@ export default function ProfilePage() {
           <ul className="mt-3 divide-y divide-beige/70 text-sm">
             {PROVIDERS.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-3 py-2"><div><p>{p.label}</p><p className="text-xs text-charcoal-mute">{p.note}</p></div>
-                <span className="shrink-0 rounded-full bg-beige px-2.5 py-1 text-[11px] text-charcoal-soft">{p.connected ? '연결됨' : '미연결'}</span></li>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] ${p.connected ? 'bg-olive-light text-olive-dark' : 'bg-beige text-charcoal-soft'}`}>{p.connected ? '연결됨' : '미연결'}</span></li>
             ))}
           </ul>
         </Card>

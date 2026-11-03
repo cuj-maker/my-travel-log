@@ -8,6 +8,7 @@ import { useDbVersion } from '@/store/useDb';
 import * as db from '@/db/database';
 import { deleteTrip, effectiveStatus, getTrip, tripSpentKRW } from '@/services/tripService';
 import { dday, fmtDateTime, fmtDuration, fmtRange, krw, nightsLabel, STATUS_LABEL } from '@/lib/format';
+import { WeatherStrip } from '@/components/live/Weather';
 
 const SRC_LABEL = { sample: '샘플 가격', user: '직접 입력', api: '실시간 조회' } as const;
 
@@ -74,6 +75,11 @@ export default function TripDetailPage() {
         <Link to={`/archive/${trip.id}`}><Button variant="ghost">아카이브 · 사진 · 후기</Button></Link>
         <Link to="/trips" className="ml-auto text-sm text-navy hover:underline">← 모든 여행</Link>
       </div>
+
+      <section className="page pt-8 sm:pt-10">
+        <SectionTitle eyebrow="Weather" title="여행지 날씨" />
+        <WeatherStrip trip={trip} />
+      </section>
 
       <section className="page py-8 sm:py-10">
         <SectionTitle eyebrow="Linked by Trip ID" title="이 여행에 연결된 데이터" />

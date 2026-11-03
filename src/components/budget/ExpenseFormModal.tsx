@@ -82,7 +82,7 @@ export default function ExpenseFormModal({ open, onClose, trip, expense }: { ope
               <div><label className="field-label">환율 (1 {d.currency} = ? 원)</label><input type="number" min={0} step="any" className="field" value={d.rate} onChange={(e) => set('rate', e.target.value)} /></div>
               <p className="pb-2.5 text-sm">≈ <b>₩{krwPreview.toLocaleString('ko-KR')}</b></p>
             </div>
-            <p className="mt-2 text-xs text-charcoal-mute">{Number(d.rate) === fx.rate ? (fx.source === 'sample' ? '샘플 환율이에요(실시간 아님). 실제 결제 환율로 고쳐 주세요.' : '이 여행에 저장된 환율이에요.') : '직접 입력한 환율이에요.'}</p>
+            <p className="mt-2 text-xs text-charcoal-mute">{Number(d.rate) === fx.rate ? (fx.source === 'sample' ? '샘플 환율이에요(실시간 환율을 불러오지 못했어요). 실제 결제 환율로 고쳐 주세요.' : fx.source === 'live' ? '오늘의 시장 환율이에요(카드 결제 환율과 조금 다를 수 있어요).' : '이 여행에 저장된 환율이에요.') : '직접 입력한 환율이에요.'}</p>
             <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" checked={d.saveRate} onChange={(e) => set('saveRate', e.target.checked)} /> 이 여행의 {d.currency} 기본 환율로 저장</label>
           </div>
         )}

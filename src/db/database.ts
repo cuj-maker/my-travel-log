@@ -60,6 +60,9 @@ function commit() {
   listeners.forEach((l) => l());
 }
 
+/** Re-render subscribers without writing anything (e.g. live API data arrived). */
+export function notify() { version++; listeners.forEach((l) => l()); }
+
 export const subscribe = (l: Listener) => { listeners.add(l); return () => listeners.delete(l); };
 export const getVersion = () => version;
 
