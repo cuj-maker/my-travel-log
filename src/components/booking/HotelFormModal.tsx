@@ -73,7 +73,7 @@ export default function HotelFormModal({ open, onClose, trip, hotel }: { open: b
   return (
     <Modal open={open} onClose={onClose} title={hotel ? '숙소 수정' : '숙소 등록'}>
       <div className="space-y-4">
-        {!hotel && <PlaceSearch city={cityQuery(trip)} placeholder="예: 호텔 이름 (호텔)" onPick={(p) => setD((x) => ({ ...x, name: p.name, address: p.address, lat: String(p.lat), lng: String(p.lng) }))} />}
+        {!hotel && <PlaceSearch city={cityQuery(trip)} placeholder="예: 마레 부티크 호텔, Hotel du Louvre" onPick={(p) => setD((x) => ({ ...x, name: p.name, address: p.address, lat: String(p.lat), lng: String(p.lng) }))} />}
         {text('name', '호텔명 *')}
         {text('address', '주소')}
         <div className="grid grid-cols-3 gap-3">{text('lat', '위도', { type: 'number', step: 'any', placeholder: '35.71' })}{text('lng', '경도', { type: 'number', step: 'any', placeholder: '139.81' })}{text('rating', '평점', { type: 'number', step: '0.1', max: 5 })}</div>

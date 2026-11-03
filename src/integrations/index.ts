@@ -34,6 +34,8 @@ export function providerStatus(s: { googleMapsKey: string; flightProxyUrl: strin
   return PROVIDERS.map((p) => {
     if (p.id === 'maps' && s.googleMapsKey) return { ...p, connected: true, note: 'Google Maps JavaScript API + Places API (New) 장소 검색' };
     if (p.id === 'routing' && s.googleMapsKey) return { ...p, connected: true, note: 'Google Routes API · 일정에서 ‘실제 경로로 계산’을 누르면 반영' };
+    if (p.id === 'maps') return { ...p, connected: true, note: 'OpenStreetMap 무료 지도 + Photon 장소 검색 (가입 불필요) · Google 키를 넣으면 Google로 전환' };
+    if (p.id === 'routing') return { ...p, connected: true, note: '도보·택시·렌터카: OSRM 실제 경로 (가입 불필요) · 대중교통은 예상값 (Google 키 필요)' };
     if (p.id === 'flights' && s.flightProxyUrl) return { ...p, connected: true, note: '내 중계 서버 → SerpApi (Google 항공권) · 스카이스캐너 링크도 제공' };
     return p;
   });

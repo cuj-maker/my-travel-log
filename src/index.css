@@ -50,3 +50,7 @@
 @media (display-mode: standalone) {
   nav a, nav button { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 }
+
+/* Soften OpenStreetMap tiles to match the app's paper / olive palette */
+.mtl-tiles { filter: saturate(0.55) sepia(0.12) brightness(1.03); }
+.leaflet-container { font-family: Pretendard, system-ui, sans-serif; background: #EFEBE2; }

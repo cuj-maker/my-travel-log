@@ -14,8 +14,7 @@ import { fmtDate, krw } from '@/lib/format';
 import { mapsDirectionsUrl, mapsPlaceUrl } from '@/integrations/links';
 import { cityQuery } from '@/integrations/live';
 import { WeatherStrip } from '@/components/live/Weather';
-import { useApiSettings } from '@/integrations/settings';
-import { syncDayFromGoogle, syncRouteFromGoogle } from '@/services/routeSync';
+import { syncDay as syncDayRoutes, syncRoute } from '@/services/routeSync';
 import { ItineraryDay, Place, TransportMode } from '@/types/models';
 
 type Panel = 'none' | 'nearby' | 'rain';
@@ -37,13 +36,15 @@ export default function PlannerPage() {
   const day: ItineraryDay | undefined = days.find((d) => d.id === dayId);
   const hotel = trip ? tripHotelPoint(trip.id) : undefined;
   const cityName = trip ? cityQuery(trip) : undefined;
-  const { googleMapsKey } = useApiSettings();
   const [syncing, setSyncing] = useState<string>();
   const syncDay = async (id: string) => {
     setSyncing(id);
     try {
-      const r = await syncDayFromGoogle(id);
-      toast(r.miss ? `${r.ok}개 구간 업데이트 · ${r.miss}개는 경로를 찾지 못했어요` : `${r.ok}개 구간을 Google 실제 경로로 업데이트했어요`, r.ok ? 'ok' : 'error');
+      const r = await syncDayRoutes(id);
+      const parts = [`${r.ok}개 구간을 실제 경로로 업데이트했어요`];
+      if (r.skip) parts.push(`대중교통 ${r.skip}개 구간은 예상값 유지 (Google 키가 있으면 계산돼요)`);
+      if (r.miss) parts.push(`${r.miss}개는 경로를 찾지 못했어요`);
+      toast(parts.join(' · '), r.ok || r.skip ? 'ok' : 'error');
     } catch (e) { toast((e as Error).message, 'error'); } finally { setSyncing(undefined); }
   };
 
@@ -110,10 +111,10 @@ export default function PlannerPage() {
                   {i < ps.length - 1 && (
                     <div className="ml-[2.1rem] flex items-center gap-2 border-l border-dashed border-beige-dark py-1.5 pl-5 text-[11px] text-charcoal-mute">
                       {r ? (<>
-                        {editable ? <select aria-label="이동수단" value={r.mode} onChange={(e) => { setRouteMode(r.id, e.target.value as TransportMode); if (googleMapsKey) syncRouteFromGoogle(r.id).catch((x) => toast(x.message, 'error')); }} className="rounded-full border border-beige-dark bg-paper px-2 py-0.5 text-[11px]">{MODES.map((m) => <option key={m} value={m}>{MODE_LABEL[m]}</option>)}</select> : <span>{MODE_LABEL[r.mode]}</span>}
+                        {editable ? <select aria-label="이동수단" value={r.mode} onChange={(e) => { setRouteMode(r.id, e.target.value as TransportMode); syncRoute(r.id).catch((x) => toast(x.message, 'error')); }} className="rounded-full border border-beige-dark bg-paper px-2 py-0.5 text-[11px]">{MODES.map((m) => <option key={m} value={m}>{MODE_LABEL[m]}</option>)}</select> : <span>{MODE_LABEL[r.mode]}</span>}
                         <span>{r.distanceKm}km · {fmtMin(r.durationMin ?? 0)} · {r.estCostKRW ? krw(r.estCostKRW) : '무료'}{r.transfers ? ` · 환승 ${r.transfers}` : ''}</span>
                         {r.source === 'api'
-                          ? <span className="rounded bg-olive-light px-1.5 py-0.5 text-[10px] text-olive-dark" title="Google Routes 기준 (교통비: 대중교통은 Google 요금, 택시·렌터카는 실제 거리 기준 추정)">Google</span>
+                          ? <span className="rounded bg-olive-light px-1.5 py-0.5 text-[10px] text-olive-dark" title={r.provider === 'osm' ? '실제 도로·보행로 기준 (OpenStreetMap). 택시·렌터카 요금은 실제 거리 기준 추정' : 'Google Routes 기준 (교통비: 대중교통은 Google 요금, 택시·렌터카는 실제 거리 기준 추정)'}>{r.provider === 'osm' ? '실측' : 'Google'}</span>
                           : <span className="rounded bg-beige/70 px-1.5 py-0.5 text-[10px] text-charcoal-soft" title="직선거리 기반 추정">예상</span>}
                       </>) : <span>좌표가 없어 이동 정보를 계산할 수 없어요</span>}
                       {ps[i + 1].category !== '이동' && p.category !== '이동' && <a href={mapsDirectionsUrl(p, ps[i + 1], r?.mode ?? 'subway', cityName)} target="_blank" rel="noreferrer" className="ml-auto inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-full border border-navy/30 px-2 py-0.5 text-[11px] text-navy hover:bg-navy-light"><Navigation size={10} />길찾기</a>}
@@ -129,7 +130,7 @@ export default function PlannerPage() {
           <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-beige/70 pt-4">
             <Button onClick={() => setForm({ open: true })}><Plus size={14} /> 장소 추가</Button>
             <Button variant="olive" onClick={doOptimize} disabled={ps.length < 3}><Compass size={14} /> 동선 최적화</Button>
-            {googleMapsKey && routes.some(Boolean) && <Button variant="ghost" disabled={syncing === d.id} onClick={() => syncDay(d.id)}><Route size={14} /> {syncing === d.id ? '계산 중…' : '실제 경로로 계산'}</Button>}
+            {routes.some(Boolean) && <Button variant="ghost" disabled={syncing === d.id} onClick={() => syncDay(d.id)}><Route size={14} /> {syncing === d.id ? '계산 중…' : '실제 경로로 계산'}</Button>}
             <label className="flex items-center gap-1.5 text-xs text-charcoal-soft">시작 <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="rounded-lg border border-beige-dark bg-paper px-2 py-1 text-xs" /></label>
             <Button variant="ghost" onClick={() => setPanel(panel === 'nearby' ? 'none' : 'nearby')}><Sparkles size={14} /> 근처 추천</Button>
             <Button variant="ghost" onClick={() => setPanel(panel === 'rain' ? 'none' : 'rain')}><CloudRain size={14} /> 비 오는 날</Button>
@@ -167,7 +168,7 @@ export default function PlannerPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Travel Planner" title="여행 일정 · 지도" desc="날짜별로 장소를 추가·정렬하고 이동 경로를 확인해요. 이동시간·교통비는 기본적으로 직선거리 기반 예상값이고, Google 키를 연결하면 ‘실제 경로로 계산’으로 실제 값을 받아와요." />
+      <PageHeader eyebrow="Travel Planner" title="여행 일정 · 지도" desc="날짜별로 장소를 추가·정렬하고 이동 경로를 확인해요. ‘실제 경로로 계산’을 누르면 도보·택시 구간은 실제 길 기준 시간·거리로 바뀌어요. 대중교통은 예상값이에요(Google 키를 넣으면 실제 시간·요금)." />
       <section className="page">
         <div className="scroll-row mb-5">
           {trips.map((t) => <button key={t.id} onClick={() => pickTrip(t.id)} className={`chip ${t.id === trip.id ? 'border-navy bg-navy text-cream' : 'border-beige-dark text-charcoal-soft hover:bg-beige/50'}`}>{t.city} {t.startDate.slice(0, 4)}</button>)}

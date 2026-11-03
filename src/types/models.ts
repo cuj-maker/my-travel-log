@@ -245,6 +245,8 @@ export interface Route extends BaseRecord {
   estCostKRW?: number;
   /** 'estimate' until a routing API is connected */
   source: 'estimate' | 'user' | 'api';
+  /** Which routing service produced 'api' values */
+  provider?: 'google' | 'osm';
 }
 
 /* ---------------- expenses ---------------- */
