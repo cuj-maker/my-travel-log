@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+  body { @apply bg-paper text-charcoal font-sans antialiased; word-break: keep-all; overscroll-behavior-y: none; }
+  h1, h2, h3, .font-display { @apply font-serif; letter-spacing: -0.01em; }
+  ::selection { background: #E4E7DD; }
+  :focus-visible { outline: 2px solid #78836A; outline-offset: 2px; }
+  button, a { touch-action: manipulation; }
+
+  /* iOS Safari: keep native date/time pickers from overflowing narrow grid cells */
+  input[type='date'], input[type='time'], input[type='datetime-local'] {
+    -webkit-appearance: none; appearance: none; min-width: 0; min-height: 2.75rem;
+  }
+  input::-webkit-date-and-time-value { text-align: left; }
+}
+
+@layer components {
+  .eyebrow { @apply text-[11px] font-medium uppercase tracking-label text-charcoal-mute; }
+  .page { @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10; }
+  .field-label { @apply mb-1.5 block text-xs font-medium text-charcoal-soft; }
+  /* 16px on phones so iOS doesn't zoom in when a field is focused */
+  .field { @apply w-full min-w-0 rounded-xl border border-beige-dark/70 bg-paper px-3.5 py-2.5 text-base text-charcoal placeholder:text-charcoal-mute/70 transition focus:border-olive focus:outline-none focus:ring-2 focus:ring-olive/20 sm:text-sm; }
+  .chip { @apply inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs transition; }
+  .img-zoom { @apply transition-transform duration-700 ease-out group-hover:scale-[1.04]; }
+
+  /* Horizontal swipe row (trip selectors, carousels) — edge-to-edge on phones */
+  .scroll-row { @apply -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0; scrollbar-width: none; }
+  .scroll-row::-webkit-scrollbar { display: none; }
+
+  /* Save/Cancel bar pinned to the bottom of a form sheet */
+  .modal-actions {
+    @apply sticky z-10 -mx-5 mt-2 flex justify-end gap-2 border-t border-beige/70 bg-paper/95 px-5 pt-3 backdrop-blur sm:-mx-8 sm:px-8;
+    bottom: calc(-1.5rem - env(safe-area-inset-bottom));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    margin-bottom: calc(-1.5rem - env(safe-area-inset-bottom));
+  }
+  .modal-actions > button { @apply flex-1 sm:flex-none; }
+  @media (min-width: 640px) {
+    .modal-actions { bottom: -2rem; padding-bottom: 2rem; margin-bottom: -2rem; }
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* Installed to the iPhone home screen: no rubber-band at the top, no text callouts on long-press of UI */
+@media (display-mode: standalone) {
+  nav a, nav button { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+}
