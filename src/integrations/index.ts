@@ -28,3 +28,13 @@ export const PROVIDERS: Provider[] = [
   { id: 'weather', label: '날씨 API', phase: 7, connected: true, note: 'Open-Meteo (키 불필요) · 16일 예보 / 지난 여행은 실제 날씨 / 먼 여행은 작년 같은 기간' },
   { id: 'llm', label: 'AI 추천 API (LLM)', phase: 6, connected: false, note: '연결 전: 규칙 기반 추천 엔진 사용' },
 ];
+
+/** Live connection status, given the current API settings. */
+export function providerStatus(s: { googleMapsKey: string; flightProxyUrl: string }): Provider[] {
+  return PROVIDERS.map((p) => {
+    if (p.id === 'maps' && s.googleMapsKey) return { ...p, connected: true, note: 'Google Maps JavaScript API + Places API (New) 장소 검색' };
+    if (p.id === 'routing' && s.googleMapsKey) return { ...p, connected: true, note: 'Google Routes API · 일정에서 ‘실제 경로로 계산’을 누르면 반영' };
+    if (p.id === 'flights' && s.flightProxyUrl) return { ...p, connected: true, note: '내 중계 서버 → SerpApi (Google 항공권) · 스카이스캐너 링크도 제공' };
+    return p;
+  });
+}

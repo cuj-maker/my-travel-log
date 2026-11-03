@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import GoogleMap from './GoogleMap';
+import { useApiSettings } from '@/integrations/settings';
 import { Place } from '@/types/models';
 import { hasGeo } from '@/services/plannerService';
 
@@ -12,7 +14,20 @@ type Pt = { lat: number; lng: number };
  * Lightweight coordinate map (no tiles): projects lat/lng onto an SVG so planning works
  * without a map API. The map-provider slot in integrations/ can replace this component.
  */
-export default function MapView({ layers, hotel, selectedId, onSelect }: { layers: MapLayer[]; hotel?: Pt & { name: string }; selectedId?: string; onSelect: (id: string) => void }) {
+export default function MapView(props: { layers: MapLayer[]; hotel?: Pt & { name: string }; selectedId?: string; onSelect: (id: string) => void }) {
+  const { googleMapsKey } = useApiSettings();
+  const [failed, setFailed] = useState<string>();
+  const hasPoints = props.layers.some((l) => l.places.some(hasGeo)) || !!props.hotel;
+  if (googleMapsKey && !failed && hasPoints) {
+    return <GoogleMap {...props} colors={DAY_COLORS} onError={setFailed} />;
+  }
+  return (<>
+    <SvgMap {...props} />
+    {failed && <p className="mt-1 text-[11px] text-clay">{failed} · 간이 지도로 표시 중</p>}
+  </>);
+}
+
+function SvgMap({ layers, hotel, selectedId, onSelect }: { layers: MapLayer[]; hotel?: Pt & { name: string }; selectedId?: string; onSelect: (id: string) => void }) {
   const { project, empty } = useMemo(() => {
     const pts: Pt[] = layers.flatMap((l) => l.places.filter(hasGeo));
     if (hotel) pts.push(hotel);
@@ -58,7 +73,7 @@ export default function MapView({ layers, hotel, selectedId, onSelect }: { layer
         {hotel && (() => { const q = project(hotel); return (
           <g transform={`translate(${q.x},${q.y})`}><path d="M0 -14 L4 -4 L14 -4 L6 3 L9 13 L0 7 L-9 13 L-6 3 L-14 -4 L-4 -4Z" fill="#B5715A" stroke="#FCFBF8" strokeWidth="1.5" /><text y="26" textAnchor="middle" fontSize="11" fill="#333" stroke="#FCFBF8" strokeWidth="3" paintOrder="stroke">{hotel.name}</text></g>); })()}
       </svg>
-      <p className="border-t border-beige bg-paper/70 px-3 py-1.5 text-[11px] text-charcoal-mute">간이 좌표 지도 · 지도 API 미연결 · 거리 비율은 위도 기준 근사값 · ★ 숙소</p>
+      <p className="border-t border-beige bg-paper/70 px-3 py-1.5 text-[11px] text-charcoal-mute">간이 좌표 지도 · Google 지도는 MY PROFILE › API 설정에서 연결 · ★ 숙소</p>
     </div>
   );
 }

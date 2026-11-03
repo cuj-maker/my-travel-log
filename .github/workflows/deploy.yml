@@ -25,6 +25,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          # Optional. Repo → Settings → Secrets and variables → Actions
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          VITE_FLIGHT_PROXY_URL: ${{ vars.FLIGHT_PROXY_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

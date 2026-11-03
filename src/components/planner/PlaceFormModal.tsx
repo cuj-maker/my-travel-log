@@ -4,6 +4,8 @@ import * as db from '@/db/database';
 import { ItineraryDay, Place, PLACE_CATEGORIES, PlaceCategory } from '@/types/models';
 import { addPlace, savePlace } from '@/services/plannerService';
 import { errMsg, fileToCompressedDataUrl } from '@/lib/format';
+import PlaceSearch from '@/components/live/PlaceSearch';
+import { cityQuery } from '@/integrations/live';
 
 const WEEK = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -24,6 +26,7 @@ export default function PlaceFormModal({ open, onClose, tripId, days, dayId, pla
   const [err, setErr] = useState('');
   useEffect(() => { if (open) { setD(place ? toDraft(place) : blank(dayId)); setErr(''); } }, [open, place, dayId]);
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((p) => ({ ...p, [k]: v }));
+  const trip = db.get('trips', tripId);
 
   // Place search = the user's own saved places (all trips); external place search arrives with a map API.
   const matches = useMemo(() => {
@@ -62,8 +65,12 @@ export default function PlaceFormModal({ open, onClose, tripId, days, dayId, pla
   return (
     <Modal open={open} onClose={onClose} title={place ? '장소 수정' : '장소 추가'}>
       <div className="space-y-4">
+        <PlaceSearch city={trip ? cityQuery(trip) : undefined} onPick={(p) => setD((x) => ({
+          ...x, name: p.name, address: p.address, lat: String(p.lat), lng: String(p.lng),
+          openTime: p.openTime ?? x.openTime, closeTime: p.closeTime ?? x.closeTime, closedDays: p.closedDays ?? x.closedDays,
+        }))} />
         <div className="relative">
-          {text('name', '장소 이름 *', { autoFocus: true, placeholder: '직접 입력하거나 저장된 장소 검색' })}
+          {text('name', '장소 이름 *', { placeholder: '직접 입력하거나 저장된 장소 검색' })}
           {matches.length > 0 && (
             <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-beige-dark bg-paper shadow-lift">
               {matches.map((m) => <li key={m.id}><button type="button" onClick={() => fill(m)} className="flex w-full justify-between px-3 py-2 text-left text-sm hover:bg-beige/50"><span>{m.name}</span><span className="text-xs text-charcoal-mute">{m.category} · 저장된 장소</span></button></li>)}
@@ -78,7 +85,7 @@ export default function PlaceFormModal({ open, onClose, tripId, days, dayId, pla
         </div>
         {text('address', '주소')}
         <div className="grid grid-cols-2 gap-3">{text('lat', '위도', { type: 'number', step: 'any', placeholder: '35.7148' })}{text('lng', '경도', { type: 'number', step: 'any', placeholder: '139.7967' })}</div>
-        <p className="-mt-2 text-xs text-charcoal-mute">좌표가 있어야 지도와 이동시간 계산에 포함돼요. 지도 앱에서 좌표를 복사해 넣을 수 있어요.</p>
+        <p className="-mt-2 text-xs text-charcoal-mute">좌표가 있어야 지도와 이동시간 계산에 포함돼요. 위의 구글 검색으로 고르면 자동으로 채워져요.</p>
         <div className="grid grid-cols-2 gap-3">{text('openTime', '오픈 시간', { type: 'time' })}{text('closeTime', '마감 시간', { type: 'time' })}</div>
         <div>
           <label className="field-label">휴무 요일</label>

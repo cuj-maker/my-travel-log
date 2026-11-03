@@ -19,6 +19,7 @@ const blank = (trip: Trip, dir: Flight['direction']) => {
   };
 };
 type Draft = ReturnType<typeof blank>;
+export type FlightPrefill = Partial<Draft>;
 
 const toDraft = (f: Flight): Draft => ({
   direction: f.direction, airline: f.airline, flightNo: f.flightNo, fromAirport: f.fromAirport, toAirport: f.toAirport,
@@ -28,7 +29,7 @@ const toDraft = (f: Flight): Draft => ({
   refund: f.refundPolicy ?? '', bookingRef: f.bookingRef ?? '', status: f.status, paymentStatus: f.paymentStatus,
 });
 
-export default function FlightFormModal({ open, onClose, trip, flight, direction = 'outbound' }: { open: boolean; onClose: () => void; trip: Trip; flight?: Flight; direction?: Flight['direction'] }) {
+export default function FlightFormModal({ open, onClose, trip, flight, direction = 'outbound', prefill }: { open: boolean; onClose: () => void; trip: Trip; flight?: Flight; direction?: Flight['direction']; prefill?: FlightPrefill }) {
   const [d, setD] = useState<Draft>(blank(trip, direction));
   const [files, setFiles] = useState<FileDraft>({ keep: [], add: [] });
   const [err, setErr] = useState('');
@@ -36,10 +37,10 @@ export default function FlightFormModal({ open, onClose, trip, flight, direction
 
   useEffect(() => {
     if (!open) return;
-    setD(flight ? toDraft(flight) : blank(trip, direction));
+    setD(flight ? toDraft(flight) : { ...blank(trip, direction), ...(prefill ?? {}) });
     setFiles({ keep: flight?.fileIds ?? [], add: [] });
     setErr('');
-  }, [open, flight, trip, direction]);
+  }, [open, flight, trip, direction, prefill]);
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((p) => ({ ...p, [k]: v }));
   const input = (k: keyof Draft, label: string, props: Record<string, unknown> = {}) => (
@@ -95,7 +96,7 @@ export default function FlightFormModal({ open, onClose, trip, flight, direction
         </div>
         <div className="grid grid-cols-2 gap-3">
           {input('price', '가격 (원) *', { type: 'number', min: 0 })}
-          <div><label className="field-label">가격 출처</label><select className="field" value={d.priceSource} onChange={(e) => set('priceSource', e.target.value as PriceSource)}><option value="user">직접 입력</option><option value="sample">샘플</option></select></div>
+          <div><label className="field-label">가격 출처</label><select className="field" value={d.priceSource} onChange={(e) => set('priceSource', e.target.value as PriceSource)}><option value="user">직접 입력</option><option value="sample">샘플</option>{d.priceSource === 'api' && <option value="api">실시간 조회 (Google 항공권)</option>}</select></div>
           {input('checked', '위탁수하물', { placeholder: '23kg' })}{input('cabin', '기내수하물', { placeholder: '10kg' })}
         </div>
         {input('refund', '환불·변경 조건', { placeholder: '출발 7일 전까지 무료 변경' })}

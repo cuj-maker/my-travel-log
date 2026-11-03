@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, FileText, Info, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Button, Card, EmptyState, Modal, PageHeader, SampleBadge, Tag, toast } from '@/components/ui';
-import FlightFormModal, { BOOKING_STATUS, PAYMENT_STATUS, PRICE_SOURCE } from '@/components/booking/FlightFormModal';
+import FlightFormModal, { BOOKING_STATUS, PAYMENT_STATUS, PRICE_SOURCE, FlightPrefill } from '@/components/booking/FlightFormModal';
+import { defaultAirports } from '@/integrations/links';
 import HotelFormModal from '@/components/booking/HotelFormModal';
 import BookingFormModal, { KIND_LABEL } from '@/components/booking/BookingFormModal';
 import { useDbVersion } from '@/store/useDb';
@@ -32,7 +33,7 @@ export default function FlightHotelPage() {
   const trips = listTrips();
   const trip = trips.find((t) => t.id === sp.get('trip')) ?? trips.find((t) => t.status !== 'completed') ?? trips[0];
   const [tab, setTab] = useState<Tab>('flight');
-  const [flightForm, setFlightForm] = useState<{ open: boolean; flight?: Flight; dir?: Flight['direction'] }>({ open: false });
+  const [flightForm, setFlightForm] = useState<{ open: boolean; flight?: Flight; dir?: Flight['direction']; prefill?: FlightPrefill }>({ open: false });
   const [hotelForm, setHotelForm] = useState<{ open: boolean; hotel?: Hotel }>({ open: false });
   const [bookingForm, setBookingForm] = useState<{ open: boolean; booking?: Booking }>({ open: false });
   const [del, setDel] = useState<Del>(null);
@@ -87,7 +88,7 @@ export default function FlightHotelPage() {
 
         {tab === 'flight' && (
           <div className="space-y-6">
-            <FlightSearchLinks key={trip.id} trip={trip} />
+            <FlightSearchLinks key={trip.id} trip={trip} onRegister={(prefill) => { const dir = prefill.fromAirport && prefill.fromAirport === defaultAirports(trip).to ? 'return' : 'outbound'; setFlightForm({ open: true, dir, prefill: { ...prefill, direction: dir } }); }} />
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => setFlightForm({ open: true, dir: 'outbound' })}><Plus size={14} /> 출국 항공권</Button>
               <Button variant="ghost" onClick={() => setFlightForm({ open: true, dir: 'return' })}><Plus size={14} /> 귀국 항공권</Button>
@@ -209,7 +210,7 @@ export default function FlightHotelPage() {
         )}
       </section>
 
-      <FlightFormModal open={flightForm.open} onClose={() => setFlightForm({ open: false })} trip={trip} flight={flightForm.flight} direction={flightForm.dir} />
+      <FlightFormModal open={flightForm.open} onClose={() => setFlightForm({ open: false })} trip={trip} flight={flightForm.flight} direction={flightForm.dir} prefill={flightForm.prefill} />
       <HotelFormModal open={hotelForm.open} onClose={() => setHotelForm({ open: false })} trip={trip} hotel={hotelForm.hotel} />
       <BookingFormModal open={bookingForm.open} onClose={() => setBookingForm({ open: false })} trip={trip} booking={bookingForm.booking} />
       <Modal open={!!del} onClose={() => setDel(null)} title="삭제할까요?">

@@ -87,6 +87,8 @@ export function recalcDay(itineraryId: ID) {
     const old = routeOf(a.id, b.id);
     const mode = old?.mode ?? defaultMode(km);
     const est = estimateRoute(mode, km);
+    // Keep real Google values while the leg (same two places, same mode) is unchanged.
+    if (old && old.source === 'api' && old.mode === mode) { keep.add(old.id); continue; }
     if (old) { db.update('routes', old.id, { ...est, mode }); keep.add(old.id); }
     else keep.add(db.insert('routes', { tripId: day.tripId, fromPlaceId: a.id, toPlaceId: b.id, mode, source: 'estimate', ...est }).id);
   }

@@ -1,0 +1,11 @@
+# MY TRAVEL LOG — flight price proxy (Cloudflare Workers, free plan is enough)
+# Deploy:  cd flight-proxy && npx wrangler login && npx wrangler secret put SERPAPI_KEY && npx wrangler deploy
+name = "my-travel-log-flights"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Sites allowed to call this proxy (comma separated). Add your GitHub Pages address.
+ALLOWED_ORIGINS = "https://YOUR-GITHUB-ID.github.io,http://localhost:5173"
+# Cache identical searches to save SerpApi quota (seconds)
+CACHE_SECONDS = "21600"

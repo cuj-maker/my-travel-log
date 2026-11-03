@@ -4,11 +4,14 @@ import { Button, Card, Modal, PageHeader, toast } from '@/components/ui';
 import { useDbVersion } from '@/store/useDb';
 import * as db from '@/db/database';
 import { clearSampleData, seedSampleData } from '@/db/seed';
-import { PROVIDERS } from '@/integrations';
+import { providerStatus } from '@/integrations';
+import { useApiSettings } from '@/integrations/settings';
+import ApiSettingsCard from '@/components/live/ApiSettingsCard';
 import { errMsg } from '@/lib/format';
 
 export default function ProfilePage() {
   useDbVersion();
+  const apiSettings = useApiSettings();
   const user = db.all('users')[0];
   const [name, setName] = useState(user?.name ?? '');
   const [confirm, setConfirm] = useState<'clear' | 'restore' | null>(null);
@@ -70,10 +73,12 @@ export default function ProfilePage() {
           </div>
         </Card>
 
+        <ApiSettingsCard />
+
         <Card>
           <h3 className="text-xl">외부 API 연결 상태</h3>
           <ul className="mt-3 divide-y divide-beige/70 text-sm">
-            {PROVIDERS.map((p) => (
+            {providerStatus(apiSettings).map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-3 py-2"><div><p>{p.label}</p><p className="text-xs text-charcoal-mute">{p.note}</p></div>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] ${p.connected ? 'bg-olive-light text-olive-dark' : 'bg-beige text-charcoal-soft'}`}>{p.connected ? '연결됨' : '미연결'}</span></li>
             ))}
