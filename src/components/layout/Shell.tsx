@@ -1,11 +1,10 @@
 import { NavLink, Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Home, Sparkles, Plane, Map, Wallet, BookImage, User, LayoutGrid, Luggage, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Home, Plane, Map, Wallet, BookImage, User, LayoutGrid, Luggage, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Toaster } from '@/components/ui';
 
 export const NAV = [
   { to: '/', label: 'HOME', short: 'Home', icon: Home, end: true },
-  { to: '/ai-travel', label: 'AI TRAVEL', short: 'AI', icon: Sparkles },
   { to: '/flight-hotel', label: 'FLIGHT & HOTEL', short: 'Stay', icon: Plane },
   { to: '/planner', label: 'TRAVEL PLANNER', short: 'Plan', icon: Map },
   { to: '/budget', label: 'TRAVEL BUDGET', short: 'Budget', icon: Wallet },
@@ -25,10 +24,9 @@ const TABS = [
 const MORE = [
   { to: '/flight-hotel', label: '항공 · 숙소 · 예약', desc: '항공권·호텔 등록과 비교, 확인서', icon: Plane },
   { to: '/trips', label: '모든 여행', desc: '여행 목록 · 만들기 · 수정', icon: Luggage },
-  { to: '/ai-travel', label: 'AI 여행 추천', desc: '스타일·예산으로 다음 여행지 찾기', icon: Sparkles },
   { to: '/profile', label: '프로필 · 데이터', desc: '백업 · 복원 · 샘플 데이터', icon: User },
 ];
-const MORE_PATHS = ['/flight-hotel', '/trips', '/ai-travel', '/profile'];
+const MORE_PATHS = ['/flight-hotel', '/trips', '/profile'];
 
 /** Title shown in the compact mobile top bar. */
 function mobileTitle(pathname: string) {
@@ -36,7 +34,7 @@ function mobileTitle(pathname: string) {
   if (pathname.startsWith('/trips/')) return '여행 상세';
   if (pathname.startsWith('/archive/')) return '여행 기록';
   const map: Record<string, string> = {
-    '/trips': '모든 여행', '/ai-travel': 'AI 여행 추천', '/flight-hotel': '항공 · 숙소', '/planner': '여행 일정',
+    '/trips': '모든 여행', '/flight-hotel': '항공 · 숙소', '/planner': '여행 일정',
     '/budget': '여행 경비', '/archive': '여행 기록', '/profile': '프로필',
   };
   return map[pathname] ?? 'MY TRAVEL LOG';

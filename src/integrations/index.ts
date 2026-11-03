@@ -26,7 +26,6 @@ export const PROVIDERS: Provider[] = [
   { id: 'routing', label: '교통 경로 API', phase: 3, connected: false, note: '앱 안의 이동시간·교통비는 예상값 · 구간별 구글 지도 길찾기 링크 제공' },
   { id: 'fx', label: '환율 API', phase: 4, connected: true, note: 'ExchangeRate-API (키 불필요, 하루 1회 갱신) · 실패 시 Frankfurter → 샘플' },
   { id: 'weather', label: '날씨 API', phase: 7, connected: true, note: 'Open-Meteo (키 불필요) · 16일 예보 / 지난 여행은 실제 날씨 / 먼 여행은 작년 같은 기간' },
-  { id: 'llm', label: 'AI 추천 API (LLM)', phase: 6, connected: false, note: '연결 전: 규칙 기반 추천 엔진 사용' },
 ];
 
 /** Live connection status, given the current API settings. */

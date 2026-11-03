@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, ArrowRight, Sparkles, Plane, Wallet, Camera } from 'lucide-react';
-import { Button, Card, EmptyState, SectionTitle, Tag, SampleBadge } from '@/components/ui';
+import { Plus, ArrowRight, Plane, Wallet, Camera } from 'lucide-react';
+import { Button, EmptyState, SectionTitle, SampleBadge } from '@/components/ui';
 import TripCard, { Cover } from '@/components/trip/TripCard';
 import TripFormModal from '@/components/trip/TripFormModal';
 import { useDbVersion } from '@/store/useDb';
 import * as db from '@/db/database';
 import { completedTrips, tripSpentKRW, tripStats, upcomingTrips } from '@/services/tripService';
-import { recommend } from '@/services/recommendService';
 import { fmtLongToday, fmtRange, krw, krwShort } from '@/lib/format';
 
 const QUOTES = [
@@ -23,7 +22,6 @@ export default function HomePage() {
   const upcoming = upcomingTrips();
   const stats = tripStats();
   const recent = completedTrips().slice(0, 3);
-  const recs = recommend({ limit: 3 });
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   return (
@@ -61,7 +59,7 @@ export default function HomePage() {
         {upcoming.length ? (
           <div className="scroll-row snap-x snap-mandatory gap-3 sm:grid sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{upcoming.slice(0, 3).map((t) => <div key={t.id} className={`shrink-0 snap-start sm:w-auto ${upcoming.length > 1 ? 'w-[82%]' : 'w-full'}`}><TripCard trip={t} /></div>)}</div>
         ) : (
-          <EmptyState title="예정된 여행이 없어요" desc="새로운 여행을 만들거나 AI TRAVEL에서 다음 여행지를 찾아보세요." action={<Button onClick={() => setOpen(true)}>여행 만들기</Button>} />
+          <EmptyState title="예정된 여행이 없어요" desc="새로운 여행을 만들어 기록을 시작해 보세요." action={<Button onClick={() => setOpen(true)}>여행 만들기</Button>} />
         )}
       </section>
 
@@ -102,24 +100,6 @@ export default function HomePage() {
             })}
           </div>
         ) : <EmptyState title="아직 완료된 여행이 없어요" desc="여행을 종료하면 이곳에 기억이 쌓여요." />}
-      </section>
-
-      {/* E. Recommendation */}
-      <section className="page py-5 sm:py-8">
-        <SectionTitle eyebrow="Travel Recommendation" title="다음 여행은 여기 어때요?" action={<Link to="/ai-travel" className="text-sm text-navy hover:underline">더 보기 →</Link>} />
-        <div className="scroll-row snap-x snap-mandatory gap-3 md:grid md:grid-cols-3 md:gap-5">
-          {recs.map((r) => (
-            <Card key={r.destination.id} className="group w-[78%] shrink-0 snap-start overflow-hidden !p-0 sm:w-[45%] md:w-auto">
-              <div className="aspect-[16/10] overflow-hidden"><img src={r.destination.image} alt={r.destination.city} loading="lazy" className="img-zoom h-full w-full object-cover" /></div>
-              <div className="p-5">
-                <div className="flex items-center justify-between"><h3 className="text-xl">{r.destination.city}</h3><Tag tone="olive">{r.score}% 일치</Tag></div>
-                <p className="mt-2 text-sm text-charcoal-soft">{r.reasons[0]}</p>
-                <p className="mt-3 text-xs text-charcoal-mute">샘플 추정 {krwShort(r.estTotalKRW)} · {r.nights}박</p>
-              </div>
-            </Card>
-          ))}
-        </div>
-        <p className="mt-3 flex items-center gap-1.5 text-xs text-charcoal-mute"><Sparkles size={12} /> 과거 여행 기록으로 계산한 규칙 기반 추천이며, 금액은 샘플 추정값입니다.</p>
       </section>
 
       {/* F. Quick access */}

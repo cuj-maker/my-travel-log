@@ -69,7 +69,7 @@ export default function TripFormModal({ open, onClose, trip, preset }: { open: b
       <div className="space-y-4">
         {!trip && (
           <div>
-            <label className="field-label">추천 여행지에서 시작 (선택)</label>
+            <label className="field-label">여행지 빠른 선택 (선택)</label>
             <select className="field" value={d.destinationId ?? ''} onChange={(e) => pickDestination(e.target.value)}>
               <option value="">직접 입력</option>
               {DESTINATIONS.map((x) => <option key={x.id} value={x.id}>{x.country} · {x.city}</option>)}

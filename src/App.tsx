@@ -3,7 +3,6 @@ import Shell from '@/components/layout/Shell';
 import HomePage from '@/pages/HomePage';
 import TripsPage from '@/pages/TripsPage';
 import TripDetailPage from '@/pages/TripDetailPage';
-import AiTravelPage from '@/pages/AiTravelPage';
 import FlightHotelPage from '@/pages/FlightHotelPage';
 import PlannerPage from '@/pages/PlannerPage';
 import BudgetPage from '@/pages/BudgetPage';
@@ -19,7 +18,6 @@ export default function App() {
         <Route index element={<HomePage />} />
         <Route path="trips" element={<TripsPage />} />
         <Route path="trips/:id" element={<TripDetailPage />} />
-        <Route path="ai-travel" element={<AiTravelPage />} />
         <Route path="flight-hotel" element={<FlightHotelPage />} />
         <Route path="planner" element={<PlannerPage />} />
         <Route path="budget" element={<BudgetPage />} />
