@@ -39,8 +39,10 @@ export async function photonSearch(q: string, near?: { lat: number; lng: number 
     };
   }).filter((s: OsmSuggestion) => s.detail.lat != null);
   // Prefer results around the trip city; if nothing is nearby show everything.
-  const nearby = all.filter((s) => s.km == null || s.km < 80);
-  return (nearby.length ? nearby : all).slice(0, 6);
+  const seen = new Set<string>();
+  const uniq = all.filter((s) => { const k = `${s.main}|${s.detail.lat.toFixed(3)}|${s.detail.lng.toFixed(3)}`; return !seen.has(k) && !!seen.add(k); });
+  const nearby = uniq.filter((s) => s.km == null || s.km < 80);
+  return (nearby.length ? nearby : uniq).slice(0, 6);
 }
 
 const PROFILE: Partial<Record<TransportMode, string>> = { walk: 'routed-foot/route/v1/foot', taxi: 'routed-car/route/v1/driving', rentcar: 'routed-car/route/v1/driving' };
